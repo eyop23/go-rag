@@ -40,6 +40,31 @@ func QueryPinecone(embedding []float64, host, apiKey string) ([]models.PineconeM
 	return result.Matches, nil
 }
 
+func GetPineconeVectorCount(host, apiKey string) (int, error) {
+	url := host + "/describe_index_stats"
+
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte("{}")))
+	req.Header.Set("Api-Key", apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return 0, fmt.Errorf("pinecone stats failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return 0, fmt.Errorf("pinecone stats error %d: %s", resp.StatusCode, string(body))
+	}
+
+	var result struct {
+		TotalVectorCount int `json:"totalVectorCount"`
+	}
+	json.Unmarshal(body, &result)
+	return result.TotalVectorCount, nil
+}
+
 func UpsertToPinecone(vectors []models.PineconeVector, host, apiKey string) error {
 	url := host + "/vectors/upsert"
 

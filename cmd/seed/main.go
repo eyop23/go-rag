@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -13,42 +14,60 @@ import (
 )
 
 func main() {
+	resume := flag.Bool("resume", false, "Resume from where you left off (skips already embedded books)")
+	flag.Parse()
+
 	cfg := config.Load()
 
-	data, err := os.ReadFile("data/ethiopian_music.json")
+	data, err := os.ReadFile("data/books.json")
 	if err != nil {
-		log.Fatalf("Failed to read ethiopian_music.json: %v", err)
+		log.Fatalf("Failed to read books.json: %v", err)
 	}
 
-	var artists []models.MusicArtist
-	if err := json.Unmarshal(data, &artists); err != nil {
+	var books []models.Book
+	if err := json.Unmarshal(data, &books); err != nil {
 		log.Fatalf("Failed to parse JSON: %v", err)
 	}
 
-	fmt.Printf("Loaded %d Ethiopian music artists\n", len(artists))
+	fmt.Printf("Loaded %d books\n", len(books))
+
+	startIndex := 0
+	if *resume {
+		count, err := services.GetPineconeVectorCount(cfg.PineconeHost, cfg.PineconeKey)
+		if err != nil {
+			log.Fatalf("Failed to get Pinecone vector count: %v", err)
+		}
+		startIndex = count
+		fmt.Printf("Pinecone has %d vectors. Resuming from book #%d\n", count, startIndex+1)
+	}
+
+	if startIndex >= len(books) {
+		fmt.Println("All books already seeded!")
+		return
+	}
 
 	var vectors []models.PineconeVector
 	batchSize := 10
 
-	for i, artist := range artists {
-		text := services.FlattenArtist(artist)
+	for i := startIndex; i < len(books); i++ {
+		book := books[i]
+		text := services.FlattenBook(book)
 		embedding, err := services.GetEmbedding(text, cfg.GoogleAPIKey)
 		if err != nil {
-			fmt.Printf("Failed to embed %s: %v\n", artist.Name, err)
-			continue
+			fmt.Printf("[%d/%d] Failed to embed %s: %v\n", i+1, len(books), book.Title, err)
+			fmt.Printf("Stopped at book #%d. Run again with --resume and a new API key to continue.\n", i+1)
+			break
 		}
 
-		fmt.Printf("[%d/%d] Embedded %s (%d dims)\n", i+1, len(artists), artist.Name, len(embedding))
+		fmt.Printf("[%d/%d] Embedded %s (%d dims)\n", i+1, len(books), book.Title, len(embedding))
 
 		vectors = append(vectors, models.PineconeVector{
-			ID:     artist.ID,
+			ID:     book.ID,
 			Values: embedding,
 			Metadata: map[string]string{
-				"text":        text,
-				"name":        artist.Name,
-				"genre":       strings.Join(artist.Genre, ", "),
-				"instruments": strings.Join(artist.Instruments, ", "),
-				"era":         artist.Era,
+				"text":   text,
+				"title":  book.Title,
+				"genres": strings.Join(book.Genres, ", "),
 			},
 		})
 
@@ -68,5 +87,5 @@ func main() {
 		fmt.Printf("Upserted final batch of %d vectors\n", len(vectors))
 	}
 
-	fmt.Println("Done! All Ethiopian music artists seeded to Pinecone.")
+	fmt.Println("Done! All books seeded to Pinecone.")
 }

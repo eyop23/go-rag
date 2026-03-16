@@ -13,8 +13,8 @@ import (
 func GetAnswerFromLLM(query, context, apiURL, apiKey string) (string, error) {
 	url := fmt.Sprintf("%s?key=%s", apiURL, apiKey)
 
-	prompt := fmt.Sprintf(`You are a knowledgeable Ethiopian music assistant. Answer the question based ONLY on the following context.
-If the question asks to list, filter, or compare multiple artists, scan ALL the records in the context and include every matching result.
+	prompt := fmt.Sprintf(`You are a knowledgeable book recommendation assistant. Answer the question based ONLY on the following context.
+If the question asks to list, filter, or compare multiple books, scan ALL the records in the context and include every matching result.
 Do not skip any matching record. If no records match, say so clearly.
 
 Context:

@@ -17,6 +17,6 @@ func main() {
 	r.Use(middleware.CORS())
 	r.POST("/ask", handlers.AskHandler(cfg))
 
-	log.Printf("Insurance RAG server running on port %s", cfg.Port)
+	log.Printf("Book Explorer RAG server running on port %s", cfg.Port)
 	r.Run(":" + cfg.Port)
 }

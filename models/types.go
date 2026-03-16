@@ -1,27 +1,13 @@
 package models
 
-// --- Ethiopian Music ---
+// --- Books ---
 
-type Album struct {
-	Title string `json:"title"`
-	Year  int    `json:"year"`
-	Label string `json:"label"`
-}
-
-type MusicArtist struct {
+type Book struct {
 	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	BirthYear   int      `json:"birthYear"`
-	DeathYear   int      `json:"deathYear,omitempty"`
-	Origin      string   `json:"origin"`
-	Genre       []string `json:"genre"`
-	Instruments []string `json:"instruments"`
-	Era         string   `json:"era"`
-	Bio         string   `json:"bio"`
-	Albums      []Album  `json:"albums"`
-	FamousSongs []string `json:"famousSongs"`
-	Awards      []string `json:"awards"`
-	Influence   string   `json:"influence"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Genres      []string `json:"genres"`
+	URL         string   `json:"url"`
 }
 
 // --- API ---
