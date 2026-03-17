@@ -12,14 +12,16 @@ import (
 )
 
 func GetAnswerFromLLM(query, context, apiURL string, apiKeys []string) (string, error) {
-	prompt := fmt.Sprintf(`You are a knowledgeable book recommendation assistant. Answer the question based ONLY on the following context.
-If the question asks to list, filter, or compare multiple books, scan ALL the records in the context and include every matching result.
-Do not skip any matching record. If no records match, say so clearly.
+	prompt := fmt.Sprintf(`You are a friendly and knowledgeable book recommendation assistant.
+
+For casual messages like greetings, small talk, or general conversation, respond naturally and warmly like a friendly assistant would. Be conversational.
+
+For book-related questions, answer based on the following context. If the question asks to list, filter, or compare multiple books, scan ALL the records and include every matching result. If no records match, say so clearly.
 
 Context:
 %s
 
-Question:
+User message:
 %s`, context, query)
 
 	reqBody := models.GeminiGenRequest{}
