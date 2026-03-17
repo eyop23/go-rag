@@ -24,10 +24,14 @@ func AskHandler(cfg *config.Config) gin.HandlerFunc {
 
 		// Step 1: Generate embedding
 		log.Println("Step 1: Generating query embedding...")
-		embedding, err := services.GetEmbedding(req.Query, cfg.GoogleAPIKey)
+		embedding, err := services.GetEmbedding(req.Query, cfg.GoogleAPIKeys)
 		if err != nil {
 			log.Printf("Embedding error: %v", err)
-			c.JSON(http.StatusServiceUnavailable, models.AskResponse{Answer: "Service is temporarily busy. Please try again in a moment."})
+			if strings.Contains(err.Error(), "keys exhausted") || strings.Contains(err.Error(), "429") {
+				c.JSON(http.StatusTooManyRequests, models.AskResponse{Error: "Gemini API rate limit reached. Please update your API key."})
+			} else {
+				c.JSON(http.StatusServiceUnavailable, models.AskResponse{Error: "Service is temporarily busy. Please try again in a moment."})
+			}
 			return
 		}
 		log.Printf("Embedding done: %d dimensions", len(embedding))
@@ -59,10 +63,14 @@ func AskHandler(cfg *config.Config) gin.HandlerFunc {
 
 		// Step 4: Get answer from LLM
 		log.Println("Step 4: Generating answer...")
-		answer, err := services.GetAnswerFromLLM(req.Query, context, cfg.GeminiAPIURL, cfg.GoogleAPIKey)
+		answer, err := services.GetAnswerFromLLM(req.Query, context, cfg.GeminiAPIURL, cfg.GoogleAPIKeys)
 		if err != nil {
 			log.Printf("LLM error: %v", err)
-			c.JSON(http.StatusServiceUnavailable, models.AskResponse{Answer: "Service is temporarily busy. Please try again in a moment."})
+			if strings.Contains(err.Error(), "keys exhausted") || strings.Contains(err.Error(), "429") {
+				c.JSON(http.StatusTooManyRequests, models.AskResponse{Error: "Gemini API rate limit reached. Please update your API key."})
+			} else {
+				c.JSON(http.StatusServiceUnavailable, models.AskResponse{Error: "Service is temporarily busy. Please try again in a moment."})
+			}
 			return
 		}
 

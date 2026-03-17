@@ -52,7 +52,7 @@ func main() {
 	for i := startIndex; i < len(books); i++ {
 		book := books[i]
 		text := services.FlattenBook(book)
-		embedding, err := services.GetEmbedding(text, cfg.GoogleAPIKey)
+		embedding, err := services.GetEmbedding(text, cfg.GoogleAPIKeys)
 		if err != nil {
 			fmt.Printf("[%d/%d] Failed to embed %s: %v\n", i+1, len(books), book.Title, err)
 			fmt.Printf("Stopped at book #%d. Run again with --resume and a new API key to continue.\n", i+1)
