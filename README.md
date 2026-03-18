@@ -1,4 +1,4 @@
-# Book Explorer RAG — Go Backend
+cla# Book Explorer RAG — Go Backend
 
 A Retrieval-Augmented Generation (RAG) API built with Go, Pinecone, and Google Gemini for querying a dataset of 2,032 books from Goodreads.
 
